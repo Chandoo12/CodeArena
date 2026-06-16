@@ -1,0 +1,31 @@
+{
+  "name": "new_project",
+  "version": "1.0.0",
+  "description": "A full-stack web application inspired by LeetCode and HackerRank that allows users to solve coding problems, participate in contests, and conduct real-time coding interviews in a shared editor.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Chandoo12/CodeArena.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Chandoo12/CodeArena/issues"
+  },
+  "homepage": "https://github.com/Chandoo12/CodeArena#readme",
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^9.7.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  }
+}

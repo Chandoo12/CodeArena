@@ -1,20 +1,28 @@
 const express = require('express');
 const cors = require('cors');
-require('dotenv').config();
+const dotenv = require('dotenv');
+const connectDB = require('./config/db');
+
+// Load environment variables
+dotenv.config();
+
+// Connect to the Database
+connectDB();
 
 const app = express();
 
-// Middleware
+// Middlewares
 app.use(cors());
 app.use(express.json());
 
-// Basic route to test server
-app.get('/api/health', (req, res) => {
-  res.json({ message: 'Backend is running!', status: 'OK' });
+//Mount Routes
+app.use('/api/auth', require('./routes/authRoutes'));
+// Base Test Route
+app.get('/', (req, res) => {
+  res.send('CodeArena API is running smoothly...');
 });
 
-// Start server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+  console.log(`Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
 });
