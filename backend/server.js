@@ -21,6 +21,11 @@ app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/users', require('./routes/userRoutes')); // <-- Add this line
 // Base Test Route
+// Mount Routes
+app.use('/api/auth', require('./routes/authRoutes'));
+app.use('/api/users', require('./routes/userRoutes'));
+app.use('/api/problems', require('./routes/problemRoutes')); // <-- Add this line
+
 app.get('/', (req, res) => {
   res.send('CodeArena API is running smoothly...');
 });
