@@ -17,6 +17,9 @@ app.use(express.json());
 
 //Mount Routes
 app.use('/api/auth', require('./routes/authRoutes'));
+// Mount Routes
+app.use('/api/auth', require('./routes/authRoutes'));
+app.use('/api/users', require('./routes/userRoutes')); // <-- Add this line
 // Base Test Route
 app.get('/', (req, res) => {
   res.send('CodeArena API is running smoothly...');
