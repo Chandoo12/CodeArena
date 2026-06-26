@@ -33,3 +33,27 @@ exports.getAllProblems = async (req, res) => {
     res.status(500).json({ message: 'Server Error', error: error.message });
   }
 };
+
+// @route   GET /api/problems/:id
+// @desc    Get a single problem by its unique database ID
+// @access  Public (Anyone can look at a problem description)
+exports.getProblemById = async (req, res) => {
+  try {
+    // 1. req.params.id extracts the ID directly from the URL path
+    const problem = await Problem.findById(req.params.id);
+
+    // 2. If no problem exists with that ID, return a 404 Not Found error
+    if (!problem) {
+      return res.status(404).json({ message: 'Problem not found' });
+    }
+
+    // 3. If found, send the complete problem data back to the frontend
+    res.json(problem);
+  } catch (error) {
+    // 4. If the user types a corrupted/invalid ID length, handle the crash gracefully
+    if (error.kind === 'ObjectId') {
+      return res.status(404).json({ message: 'Problem not found' });
+    }
+    res.status(500).json({ message: 'Server Error', error: error.message });
+  }
+};
