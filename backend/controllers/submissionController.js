@@ -2,39 +2,48 @@ const Submission = require('../models/Submission');
 const Problem = require('../models/Problem');
 const { executeCode } = require('../utils/executeCode');
 
-// @route   POST /api/submissions
-// @desc    Submit code to be run and evaluated against public test cases
-// @access  Private (Must be logged in to submit code)
 exports.submitCode = async (req, res) => {
   try {
     const { problemId, language, code } = req.body;
 
-    // 1. Verify the problem exists in our database
+    // 1. Fetch the actual problem to get access to its test cases
     const problem = await Problem.findById(problemId);
     if (!problem) {
       return res.status(404).json({ message: 'Problem not found' });
     }
 
-    // 2. Pass the code to our Day 7 execution utility to run it in the background terminal
-    const runResult = await executeCode(language, code);
-
-    // 3. Map the runner status to our official MongoDB submission model statuses
-    let finalStatus = 'Pending';
+    let finalStatus = 'Accepted';
     let errorMessage = null;
 
-    if (runResult.status === 'Success') {
-      finalStatus = 'Accepted'; // For now, we accept it if it runs without crashing
-    } else if (runResult.status === 'Time Limit Exceeded') {
-      finalStatus = 'Time Limit Exceeded';
-      errorMessage = runResult.error;
-    } else if (runResult.status === 'Runtime Error') {
-      finalStatus = 'Runtime Error';
-      errorMessage = runResult.error;
+    // 2. Loop through all the test cases saved for this problem
+    for (let i = 0; i < problem.testCases.length; i++) {
+      const testCase = problem.testCases[i];
+
+      // Run the user's code passing the specific test case input
+      const runResult = await executeCode(language, code, testCase.input);
+
+      // Check if the script crashed or timed out
+      if (runResult.status === 'Time Limit Exceeded') {
+        finalStatus = 'Time Limit Exceeded';
+        errorMessage = runResult.error;
+        break; // Stop testing further cases if it fails
+      } else if (runResult.status === 'Runtime Error') {
+        finalStatus = 'Runtime Error';
+        errorMessage = runResult.error;
+        break; 
+      }
+
+      // 3. Match Evaluation: Compare the code's output against the expected database output
+      if (runResult.output !== testCase.output.trim()) {
+        finalStatus = 'Wrong Answer';
+        errorMessage = `Failed on Test Case ${i + 1}. Expected: ${testCase.output}, Got: ${runResult.output}`;
+        break; // Fail immediately on the first incorrect test case (Standard Judge Rule)
+      }
     }
 
-    // 4. Save the full attempt history into MongoDB
+    // 4. Save the final graded verdict to MongoDB
     const submission = await Submission.create({
-      user: req.user._id, // Set automatically by our protect middleware
+      user: req.user._id,
       problem: problemId,
       language,
       code,
@@ -42,11 +51,9 @@ exports.submitCode = async (req, res) => {
       errorMessage
     });
 
-    // 5. Respond back to Postman with the run metrics
     res.status(201).json({
       submissionId: submission._id,
       status: submission.status,
-      output: runResult.output,
       error: errorMessage
     });
 
