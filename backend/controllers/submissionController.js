@@ -61,3 +61,36 @@ exports.submitCode = async (req, res) => {
     res.status(500).json({ message: 'Server Error', error: error.message });
   }
 };
+
+// @route   GET /api/submissions/my
+// @desc    Get all submissions belonging to the logged-in user (DASHBOARD)
+// @access  Private
+exports.getMySubmissions = async (req, res) => {
+  try {
+    // Look up submissions where 'user' matches the logged-in user's ID from our protect token middleware
+    // We use .populate() to automatically look up and merge the problem's title and difficulty!
+    const submissions = await Submission.find({ user: req.user._id })
+      .populate('problem', 'title difficulty')
+      .sort({ executedAt: -1 }); // Sort by newest first
+
+    res.json(submissions);
+  } catch (error) {
+    res.status(500).json({ message: 'Server Error', error: error.message });
+  }
+};
+
+// @route   GET /api/submissions/problem/:problemId
+// @desc    Get all submissions made by the logged-in user for a SPECIFIC problem
+// @access  Private
+exports.getProblemSubmissions = async (req, res) => {
+  try {
+    const submissions = await Submission.find({
+      user: req.user._id,
+      problem: req.params.problemId
+    }).sort({ executedAt: -1 });
+
+    res.json(submissions);
+  } catch (error) {
+    res.status(500).json({ message: 'Server Error', error: error.message });
+  }
+};
